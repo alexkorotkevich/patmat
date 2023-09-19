@@ -1,5 +1,7 @@
 package patmat
 
+import patmat.Huffman.makeOrderedLeafList
+
 abstract class CodeTree
 
 case class Fork(left: CodeTree, right: CodeTree, chars: List[Char], weight: Int) extends CodeTree
@@ -8,7 +10,6 @@ case class Leaf(char: Char, weight: Int) extends CodeTree
 
 trait Huffman extends HuffmanInterface:
 
-  // Part 1: Basics
   def weight(tree: CodeTree): Int = tree match
     case Fork(left, right, chars, weight) => weight //     case Fork(_, _, _, weight) => weight
     case Leaf(char, weight) => weight //     case Leaf(_, weight) => weight
@@ -17,29 +18,12 @@ trait Huffman extends HuffmanInterface:
     case Fork(left, right, chars, weight) => chars //  case Fork(_, _, chars, _) => chars
     case Leaf(char, weight) => List(char) //    case Leaf(char, _) => List(char)
 
-  def makeCodeTree(left: CodeTree, right: CodeTree) =
+  def makeCodeTree(left: CodeTree, right: CodeTree): Fork =
     Fork(left, right, chars(left) ::: chars(right), weight(left) + weight(right))
 
-  // Part 2: Generating Huffman trees
-
-  /**
-   * In this assignment, we are working with lists of characters. This function allows
-   * you to easily create a character list from a given string.
-   */
   def string2Chars(str: String): List[Char] = str.toList
 
   /**
-   * This function computes for each unique character in the list `chars` the number of
-   * times it occurs. For example, the invocation
-   *
-   * times(List('a', 'b', 'a'))
-   *
-   * should return the following (the order of the resulting list is not important):
-   *
-   * List(('a', 2), ('b', 1))
-   *
-   * The type `List[(Char, Int)]` denotes a list of pairs, where each pair consists of a
-   * character and an integer. Pairs can be constructed easily using parentheses:
    *
    * val pair: (Char, Int) = ('c', 1)
    *
@@ -56,16 +40,20 @@ trait Huffman extends HuffmanInterface:
    * println("integer is  : "+ theInt)
    * }
    */
-  def times(chars: List[Char]): List[(Char, Int)] = ???
 
-  /**
-   * Returns a list of `Leaf` nodes for a given frequency table `freqs`.
-   *
-   * The returned list should be ordered by ascending weights (i.e. the
-   * head of the list should have the smallest weight), where the weight
-   * of a leaf is the frequency of the character.
-   */
-  def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] = ???
+  def times(chars: List[Char]): List[(Char, Int)] =
+    var charsMap: Map[Char, Int] = Map()
+    for (char <- chars)
+      if charsMap.contains(char) then
+        val count = charsMap.getOrElse(char, 0) + 1
+        //        println(count)
+        charsMap += (char -> count)
+      else
+        charsMap += (char -> 1)
+    charsMap.toList
+
+  def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] =
+    freqs.sortBy(_._2).map(leaf => Leaf(leaf._1, leaf._2))
 
   /**
    * Checks whether the list `trees` contains only one single code tree.
