@@ -26,7 +26,6 @@ class HuffmanSuite extends munit.FunSuite:
     assertEquals(string2Chars("hello, world"), List('h', 'e', 'l', 'l', 'o', ',', ' ', 'w', 'o', 'r', 'l', 'd'))
   }
 
-
   test("make ordered leaf list for some frequency table (15pts)") {
     assertEquals(makeOrderedLeafList(List(('t', 2), ('e', 1), ('x', 3))), List(Leaf('e', 1), Leaf('t', 2), Leaf('x', 3)))
   }
@@ -40,9 +39,13 @@ class HuffmanSuite extends munit.FunSuite:
 
   test("decode and encode a very short text should be identity (10pts)") {
     new TestTrees:
-      assertEquals(decode(t1, encode(t1)("ab".toList)), "ab".toList)
+      assertEquals(decode(t2, encode(t2)("abd".toList)), "abd".toList)
   }
 
+  test("decode and quick encode") {
+    new TestTrees:
+      assertEquals(decode(t1, quickEncode(t1)("ab".toList)), "ab".toList)
+  }
 
   import scala.concurrent.duration.*
 
