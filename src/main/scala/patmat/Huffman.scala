@@ -53,17 +53,12 @@ trait Huffman extends HuffmanInterface:
   private type Bit = Int
 
   def decode(tree: CodeTree, bits: List[Bit]): List[Char] =
-
-
-    def decoding(rest: CodeTree, bits: List[Bit]): List[Char] = {
-      println(rest)
+    def decoding(rest: CodeTree, bits: List[Bit]): List[Char] =
+    //      println(rest)
+    //      println(bits)
       rest match
-
-        case Leaf(char, _)
-        => if bits.isEmpty then List(char) else char :: decoding(tree, bits) // rest??
-        case Fork(left, right, _, _)
-        => if bits.head == 0 then decoding(right, bits.tail) else decoding(left, bits.tail)
-    }
+        case Leaf(char, _) => if bits.isEmpty then List(char) else char :: decoding(tree, bits) // rest??
+        case Fork(left, right, _, _) => if bits.head == 1 then decoding(right, bits.tail) else decoding(left, bits.tail)
 
     decoding(tree, bits)
 
@@ -76,23 +71,48 @@ trait Huffman extends HuffmanInterface:
 
   def encode(tree: CodeTree)(text: List[Char]): List[Bit] =
     def encoding(tree: CodeTree)(char: Char): List[Bit] =
+    //      println(tree)
+    //      println(char)
       tree match
         case Leaf(_, _) => List()
-        case Fork(left, right, _, _) => if chars(left).contains(char) then 1 :: encoding(left)(char) else 0 :: encoding(right)(char)
+        case Fork(left, right, _, _) => if chars(left).contains(char) then 0 :: encoding(left)(char) else 1 :: encoding(right)(char)
     //    text.map(encoding(tree)).flatten
     // ::: ?
     text.flatMap(encoding(tree))
 
+
   private type CodeTable = List[(Char, List[Bit])]
+  type Code = (Char, List[Bit])
 
   private def codeBits(table: CodeTable)(char: Char): List[Bit] =
     table.find(codeTable => codeTable._1 == char).head._2
 
-  def convert(tree: CodeTree): CodeTable = tree match
-    case Leaf(char, _) => List((char, List()))
-    case Fork(left, right, _, _) => mergeCodeTables(convert(left), convert(right))
+  def convert(tree: CodeTree): CodeTable =
+  //    println(tree)
+    tree match
+      case Leaf(char, _) => List((char, List()))
+      case Fork(left, right, _, _) =>
+        // println(mergeCodeTables(convert(left), convert(right)))
+        mergeCodeTables(convert(left), convert(right))
 
-  private def mergeCodeTables(a: CodeTable, b: CodeTable): CodeTable = a ::: b
+  private def mergeCodeTables(a: CodeTable, b: CodeTable): CodeTable =
+    //    println(a)
+    //    println(b)
+    //    println(1)
+    //        a ::: b
+    //    a ++ b
+    //    a.concat(b)
+
+    def concat(bit: Bit)(codeTable: CodeTable): CodeTable =
+    //      println(codeTable)
+    //      println(bit)
+      codeTable.map(table =>
+        //        println(table._1)
+        //        println(table._2)
+        (table._1, bit :: table._2))
+
+    concat(0)(a) ::: concat(1)(b)
+
 
   def quickEncode(tree: CodeTree)(text: List[Char]): List[Bit] = text.flatMap(codeBits(convert(tree)))
 
@@ -101,6 +121,6 @@ object Huffman extends Huffman
 
 val t1 = Fork(Leaf('a', 2), Leaf('b', 3), List('a', 'b'), 5)
 val t2 = Fork(Fork(Leaf('a', 2), Leaf('b', 3), List('a', 'b'), 5), Leaf('d', 4), List('a', 'b', 'd'), 9)
-@main def dec() = println(Huffman.decode(t2, List(1, 1, 1, 0, 0)))
+@main def dec() = println(Huffman.decode(t2, List(0, 0, 0, 1, 1)))
 @main def enc() = println(Huffman.encode(t2)("abd".toList))
 @main def quickEnc() = println(Huffman.quickEncode(t2)("abd".toList))
